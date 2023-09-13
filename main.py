@@ -44,7 +44,7 @@ def initialize_game(board, num):
             board[5][6] = 'O'
             board[6][1] = 'X'
             board[6][2] = 'X'
-            #board[6][6] = 'O'
+            # board[6][6] = 'O'
 
     # place all initial chess as shown in the requirements
 
@@ -223,15 +223,9 @@ def move(game, user_cmd_list):
 
 
 def ai_move(board, user_color):
-    # now = time.time()
-    # future = now + time_limit
-    # # time limit for ai to run algorithm
-    # while time.time() < future:
-    #     # do stuff
-    #     pass
-    # print("AI move")
-    best_move, _ = minimax(board, user_color, 3, True)
-    print(best_move)
+    # best_move, _, state_visited = minimax(board, user_color, 2, True, 0)
+    best_move, _, state_visited = alpha_beta_pruning(board, user_color, 2, True, -np.inf, np.inf, 0)
+    print(state_visited)
     return best_move
 
 
@@ -264,10 +258,10 @@ def generate_all_possible_moves(board, color):
     return all_possible_moves
 
 
-def minimax(board, user_color, depth, maximizing_player):
+def minimax(board, user_color, depth, maximizing_player, state_visited):
     valid_moves = generate_all_possible_moves(board, user_color)
     if depth == 0 or detect_game_state(board) != 0:
-        return None, detect_game_state(board)
+        return None, detect_game_state(board), state_visited
 
     if maximizing_player:
         v = -np.inf
@@ -276,14 +270,13 @@ def minimax(board, user_color, depth, maximizing_player):
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            new_score = minimax(temp_board, user_color, depth - 1, False)[1]
+            _, new_score, state_visited = minimax(temp_board, user_color, depth - 1, False, state_visited+1)
             if user_color == 'X':
                 new_score = -new_score
-            print(new_score, cmd)
             if new_score > v:
                 v = new_score
                 best_move = cmd
-        return best_move, -v
+        return best_move, -v, state_visited
     else:
         v = np.inf
         best_move = valid_moves[0]
@@ -291,14 +284,55 @@ def minimax(board, user_color, depth, maximizing_player):
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            new_score = minimax(temp_board, user_color, depth - 1, True)[1]
+            _, new_score, state_visited = minimax(temp_board, user_color, depth - 1, True, state_visited+1)
             if user_color == 'X':
                 new_score = -new_score
-            # print(new_score)
             if new_score < v:
                 v = new_score
                 best_move = cmd
-        return best_move, -v
+        return best_move, -v, state_visited
+
+
+def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta, state_visited):
+    valid_moves = generate_all_possible_moves(board, user_color)
+    if depth == 0 or detect_game_state(board) != 0:
+        return None, detect_game_state(board), state_visited
+
+    if maximizing_player:
+        v = -np.inf
+        best_move = valid_moves[0]
+        for cmd in valid_moves:
+            temp_board = copy.deepcopy(board)
+            cmd_list = list(cmd)
+            move(temp_board, cmd_list)
+            _, new_score, state_visited = alpha_beta_pruning(temp_board, user_color, depth - 1, False, alpha, beta, state_visited+1)
+            if user_color == 'X':
+                new_score = -new_score
+            print(new_score, cmd)
+            if new_score > v:
+                v = new_score
+                best_move = cmd
+            if v >= beta:
+                break
+            alpha = max(alpha, v)
+        return best_move, -v, state_visited
+    else:
+        v = np.inf
+        best_move = valid_moves[0]
+        for cmd in valid_moves:
+            temp_board = copy.deepcopy(board)
+            cmd_list = list(cmd)
+            move(temp_board, cmd_list)
+            _, new_score, state_visited = alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta, state_visited+1)
+            if user_color == 'X':
+                new_score = -new_score
+            if new_score < v:
+                v = new_score
+                best_move = cmd
+            if v <= alpha:
+                break
+            beta = min(beta, v)
+        return best_move, -v, state_visited
 
 
 def detect_game_state(game):
@@ -318,11 +352,11 @@ def detect_game_state(game):
 
 
 def display_board(board):
-    print(DataFrame(board))
+    print(DataFrame(board, index=[1, 2, 3, 4, 5, 6, 7], columns=[1, 2, 3, 4, 5, 6, 7]))
 
 
 def game_on():
-    game = initialize_game(create_board(), 2)
+    game = initialize_game(create_board(), 1)
     user_color = ''
     ai_color = ''
     turn = 1
@@ -339,6 +373,8 @@ def game_on():
     while detect_game_state(game) == 0:
         if turn == 1:
             val = input("It is your turn, please enter your command: ")
+            val = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
+            print(val)
             user_cmd_list = check_valid_move(game, user_color, val)
             if not isinstance(user_cmd_list, list):
                 print("This move is not valid, please re-enter your command")
