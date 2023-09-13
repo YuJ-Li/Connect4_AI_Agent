@@ -18,33 +18,32 @@ def create_board():
 
 
 def initialize_game(board, num):
-    match num:
-        case 1:
-            board[0][1] = 'X'
-            board[0][2] = 'X'
-            board[0][4] = 'O'
-            board[1][6] = 'X'
-            board[2][0] = 'O'
-            board[3][0] = 'O'
-            board[3][6] = 'O'
-            board[4][6] = 'O'
-            board[5][0] = 'X'
-            board[6][2] = 'O'
-            board[6][4] = 'X'
-            board[6][5] = 'X'
-        case 2:
-            board[0][5] = 'O'
-            board[0][6] = 'O'
-            board[1][4] = 'O'
-            board[1][5] = 'X'
-            board[1][6] = 'X'
-            board[3][5] = 'O'
-            board[5][1] = 'X'
-            board[5][5] = 'X'
-            board[5][6] = 'O'
-            board[6][1] = 'X'
-            board[6][2] = 'X'
-            # board[6][6] = 'O'
+    if num == 1:
+        board[0][1] = 'X'
+        board[0][2] = 'X'
+        board[0][4] = 'O'
+        board[1][6] = 'X'
+        board[2][0] = 'O'
+        board[3][0] = 'O'
+        board[3][6] = 'O'
+        board[4][6] = 'O'
+        board[5][0] = 'X'
+        board[6][2] = 'O'
+        board[6][4] = 'X'
+        board[6][5] = 'X'
+    elif num == 2:
+        board[0][5] = 'O'
+        board[0][6] = 'O'
+        board[1][4] = 'O'
+        board[1][5] = 'X'
+        board[1][6] = 'X'
+        board[3][5] = 'O'
+        board[5][1] = 'X'
+        board[5][5] = 'X'
+        board[5][6] = 'O'
+        board[6][1] = 'X'
+        board[6][2] = 'X'
+        # board[6][6] = 'O'
 
     # place all initial chess as shown in the requirements
 
@@ -125,24 +124,24 @@ def check_max_move(board, x, y):
 
 def check_jump(game, curr_x, curr_y, steps, dir):
     # verify if a move is a jump, return 1 for jump, 0 for normal move
-    match dir.upper():
-        case 'N':
-            for i in range(1, steps + 1):
-                if game[curr_x - i][curr_y] != ' ':
-                    return 1
-        case 'S':
-            for i in range(1, steps + 1):
-                if game[curr_x + i][curr_y] != ' ':
-                    return 1
-        case 'E':
-            for i in range(1, steps + 1):
-                if game[curr_x][curr_y + i] != ' ':
-                    return 1
-        case 'W':
-            for i in range(1, steps + 1):
-                if game[curr_x][curr_y - i] != ' ':
-                    return 1
-    return 0
+    if dir.upper() == 'N':
+        for i in range(1, steps + 1):
+            if game[curr_x - i][curr_y] != ' ':
+                return 1
+    elif dir.upper() == 'S':
+        for i in range(1, steps + 1):
+            if game[curr_x + i][curr_y] != ' ':
+                return 1
+    elif dir.upper() == 'E':
+        for i in range(1, steps + 1):
+            if game[curr_x][curr_y + i] != ' ':
+                return 1
+    elif dir.upper() == 'W':
+        for i in range(1, steps + 1):
+            if game[curr_x][curr_y - i] != ' ':
+                return 1
+    else:
+        return 0
 
 
 def check_out_of_board(game, cmdlist):
@@ -150,20 +149,20 @@ def check_out_of_board(game, cmdlist):
     y = int(cmdlist[1])
     x = int(cmdlist[0])
     step = int(cmdlist[3])
-    match cmd:
-        case 'N':
-            if y - step < 0:
-                return 1
-        case 'S':
-            if y + step > 6:
-                return 1
-        case 'W':
-            if x - step < 0:
-                return 1
-        case 'E':
-            if x + step > 6:
-                return 1
-    return 0
+    if cmd == 'N':
+        if y - step < 0:
+            return 1
+    elif cmd == 'S':
+        if y + step > 6:
+            return 1
+    elif cmd == 'W':
+        if x - step < 0:
+            return 1
+    elif cmd == 'E':
+        if x + step > 6:
+            return 1
+    else:
+        return 0
 
 
 def check_valid_move(board, user_color, val):
@@ -210,22 +209,21 @@ def check_valid_move(board, user_color, val):
 
 
 def move(game, user_cmd_list):
-    match user_cmd_list[2]:
-        case "N":
-            move_n(game, int(user_cmd_list[1]), int(user_cmd_list[0]), int(user_cmd_list[3]))
-        case "S":
-            move_s(game, int(user_cmd_list[1]), int(user_cmd_list[0]), int(user_cmd_list[3]))
-        case "W":
-            move_w(game, int(user_cmd_list[1]), int(user_cmd_list[0]), int(user_cmd_list[3]))
-        case "E":
-            move_e(game, int(user_cmd_list[1]), int(user_cmd_list[0]), int(user_cmd_list[3]))
-    return 0
+    if user_cmd_list[2] == "N":
+        move_n(game, int(user_cmd_list[1]), int(user_cmd_list[0]), int(user_cmd_list[3]))
+    elif user_cmd_list[2] == "S":
+        move_s(game, int(user_cmd_list[1]), int(user_cmd_list[0]), int(user_cmd_list[3]))
+    elif user_cmd_list[2] == "W":
+        move_w(game, int(user_cmd_list[1]), int(user_cmd_list[0]), int(user_cmd_list[3]))
+    elif user_cmd_list[2] == "E":
+        move_e(game, int(user_cmd_list[1]), int(user_cmd_list[0]), int(user_cmd_list[3]))
+    else:
+        return 0
 
 
 def ai_move(board, user_color):
-    # best_move, _, state_visited = minimax(board, user_color, 2, True, 0)
-    best_move, _, state_visited = alpha_beta_pruning(board, user_color, 2, True, -np.inf, np.inf, 0)
-    print(state_visited)
+    best_move, _, state_visited = minimax(board, user_color, 2, True, 0)
+    # best_move, _, state_visited = alpha_beta_pruning(board, user_color, 2, True, -np.inf, np.inf, 0)
     return best_move
 
 
@@ -259,6 +257,7 @@ def generate_all_possible_moves(board, color):
 
 
 def minimax(board, user_color, depth, maximizing_player, state_visited):
+    print(state_visited)
     valid_moves = generate_all_possible_moves(board, user_color)
     if depth == 0 or detect_game_state(board) != 0:
         return None, detect_game_state(board), state_visited
@@ -270,7 +269,7 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            _, new_score, state_visited = minimax(temp_board, user_color, depth - 1, False, state_visited+1)
+            _, new_score, state_visited = minimax(temp_board, user_color, depth - 1, False, state_visited + 1)
             if user_color == 'X':
                 new_score = -new_score
             if new_score > v:
@@ -284,7 +283,7 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            _, new_score, state_visited = minimax(temp_board, user_color, depth - 1, True, state_visited+1)
+            _, new_score, state_visited = minimax(temp_board, user_color, depth - 1, True, state_visited + 1)
             if user_color == 'X':
                 new_score = -new_score
             if new_score < v:
@@ -305,7 +304,8 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            _, new_score, state_visited = alpha_beta_pruning(temp_board, user_color, depth - 1, False, alpha, beta, state_visited+1)
+            _, new_score, state_visited = alpha_beta_pruning(temp_board, user_color, depth - 1, False, alpha, beta,
+                                                             state_visited + 1)
             if user_color == 'X':
                 new_score = -new_score
             print(new_score, cmd)
@@ -323,7 +323,8 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            _, new_score, state_visited = alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta, state_visited+1)
+            _, new_score, state_visited = alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta,
+                                                             state_visited + 1)
             if user_color == 'X':
                 new_score = -new_score
             if new_score < v:
