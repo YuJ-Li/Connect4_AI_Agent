@@ -32,12 +32,12 @@ def initialize_game(board, num):
         board[6][4] = 'X'
         board[6][5] = 'X'
     elif num == 2:
-        board[0][5] = 'O'
-        board[0][6] = 'O'
-        board[1][4] = 'O'
-        board[1][5] = 'X'
-        board[1][6] = 'X'
-        board[3][5] = 'O'
+        # board[0][5] = 'O'
+        # board[0][6] = 'O'
+        # board[1][4] = 'O'
+        # board[1][5] = 'X'
+        # board[1][6] = 'X'
+        # board[3][5] = 'O'
         board[5][1] = 'X'
         board[5][5] = 'X'
         board[5][6] = 'O'
@@ -222,8 +222,9 @@ def move(game, user_cmd_list):
 
 
 def ai_move(board, user_color):
-    best_move, _, state_visited = minimax(board, user_color, 2, True, 0)
+    best_move, gamestate, state_visited = minimax(board, user_color, 3, True, 0)
     # best_move, _, state_visited = alpha_beta_pruning(board, user_color, 2, True, -np.inf, np.inf, 0)
+    print(best_move, gamestate, state_visited)
     return best_move
 
 
@@ -257,12 +258,11 @@ def generate_all_possible_moves(board, color):
 
 
 def minimax(board, user_color, depth, maximizing_player, state_visited):
-    print(state_visited)
-    valid_moves = generate_all_possible_moves(board, user_color)
     if depth == 0 or detect_game_state(board) != 0:
         return None, detect_game_state(board), state_visited
 
     if maximizing_player:
+        valid_moves = generate_all_possible_moves(board, user_color)
         v = -np.inf
         best_move = valid_moves[0]
         for cmd in valid_moves:
@@ -275,8 +275,18 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             if new_score > v:
                 v = new_score
                 best_move = cmd
+                if new_score == 1:
+                    print("best score is ",new_score,cmd)
+                    display_board(temp_board)
         return best_move, -v, state_visited
     else:
+        opp_color = ''
+        if user_color == 'X':
+            opp_color = 'O'
+        else:
+            opp_color = 'X'
+        valid_moves = generate_all_possible_moves(board, opp_color)
+        display_board(board)
         v = np.inf
         best_move = valid_moves[0]
         for cmd in valid_moves:
@@ -308,7 +318,7 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
                                                              state_visited + 1)
             if user_color == 'X':
                 new_score = -new_score
-            print(new_score, cmd)
+
             if new_score > v:
                 v = new_score
                 best_move = cmd
@@ -357,7 +367,7 @@ def display_board(board):
 
 
 def game_on():
-    game = initialize_game(create_board(), 1)
+    game = initialize_game(create_board(), 2)
     user_color = ''
     ai_color = ''
     turn = 1
@@ -375,7 +385,6 @@ def game_on():
         if turn == 1:
             val = input("It is your turn, please enter your command: ")
             val = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
-            print(val)
             user_cmd_list = check_valid_move(game, user_color, val)
             if not isinstance(user_cmd_list, list):
                 print("This move is not valid, please re-enter your command")
