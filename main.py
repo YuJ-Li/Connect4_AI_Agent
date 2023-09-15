@@ -230,8 +230,8 @@ def move(game, user_cmd_list):
 
 
 def ai_move(board, user_color):
-    best_move, gamestate, state_visited = minimax(board, user_color, 3, True, 0)
-    # best_move, _, state_visited = alpha_beta_pruning(board, user_color, 2, True, -np.inf, np.inf, 0)
+    # best_move, gamestate, state_visited = minimax(board, user_color, 3, True, 0)
+    best_move, gamestate, state_visited = alpha_beta_pruning(board, user_color, 3, True, -np.inf, np.inf, 0)
     print(best_move, gamestate, state_visited)
     return best_move
 
@@ -283,9 +283,6 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             if new_score > v:
                 v = new_score
                 best_move = cmd
-                if new_score == 1:
-                    print("best score is ",new_score,cmd)
-                    display_board(temp_board)
         return best_move, v, state_visited
     else:
         opp_color = ''
@@ -303,7 +300,6 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             move(temp_board, cmd_list)
             _, new_score, state_visited = minimax(temp_board, user_color, depth - 1, True, state_visited + 1)
             if opp_color == 'O':
-                print("new", new_score)
                 new_score = -new_score
             if new_score < v:
                 v = new_score
@@ -312,11 +308,11 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
 
 
 def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta, state_visited):
-    valid_moves = generate_all_possible_moves(board, user_color)
     if depth == 0 or detect_game_state(board) != 0:
         return None, detect_game_state(board), state_visited
 
     if maximizing_player:
+        valid_moves = generate_all_possible_moves(board, user_color)
         v = -np.inf
         best_move = valid_moves[0]
         for cmd in valid_moves:
@@ -334,8 +330,14 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             if v >= beta:
                 break
             alpha = max(alpha, v)
-        return best_move, -v, state_visited
+        return best_move, v, state_visited
     else:
+        opp_color = ''
+        if user_color == 'X':
+            opp_color = 'O'
+        else:
+            opp_color = 'X'
+        valid_moves = generate_all_possible_moves(board, opp_color)
         v = np.inf
         best_move = valid_moves[0]
         for cmd in valid_moves:
@@ -344,7 +346,7 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             move(temp_board, cmd_list)
             _, new_score, state_visited = alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta,
                                                              state_visited + 1)
-            if user_color == 'X':
+            if opp_color == 'O':
                 new_score = -new_score
             if new_score < v:
                 v = new_score
@@ -352,7 +354,7 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             if v <= alpha:
                 break
             beta = min(beta, v)
-        return best_move, -v, state_visited
+        return best_move, v, state_visited
 
 
 def detect_game_state(game):
@@ -376,7 +378,7 @@ def display_board(board):
 
 
 def game_on():
-    game = initialize_game(create_board(), 2)
+    game = initialize_game(create_board(), 3)
     user_color = ''
     ai_color = ''
     turn = 1
