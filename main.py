@@ -17,45 +17,22 @@ def create_board():
     return board
 
 
-def initialize_game(board, num):
-    if num == 1:
-        board[0][1] = 'X'
-        board[0][2] = 'X'
-        board[0][4] = 'O'
-        board[1][6] = 'X'
-        board[2][0] = 'O'
-        board[3][0] = 'O'
-        board[3][6] = 'O'
-        board[4][6] = 'O'
-        board[5][0] = 'X'
-        board[6][2] = 'O'
-        board[6][4] = 'X'
-        board[6][5] = 'X'
-    elif num == 2:
-        board[0][0] = 'O'
-        # board[0][5] = 'O'
-        # board[0][6] = 'O'
-        # board[1][4] = 'O'
-        # board[1][5] = 'X'
-        # board[1][6] = 'X'
-        # board[3][5] = 'O'
-        board[5][1] = 'X'
-        board[5][5] = 'X'
-        board[4][2] = 'O'
-        board[6][1] = 'X'
-        board[6][2] = 'X'
-        # board[5][6] = 'O'
-        # board[6][6] = 'O'
-    elif num == 3:
-        board[0][0] = 'O'
-        board[5][1] = 'X'
-        board[5][5] = 'X'
-        board[6][1] = 'X'
-        board[6][2] = 'X'
-        board[5][6] = 'O'
-    # place all initial chess as shown in the requirements
-
+def initialize_game(board, filename):
+    l1 = read_in(filename)
+    for row in range(7):
+        for col in range(7):
+            board[row][col] = l1[row * 7 + col]
     return board
+
+
+def read_in(filename):
+    f = open(filename, 'r')
+    l = []
+    for line in f:
+        temp = line.split(',')
+        temp[-1] = temp[-1].strip('\n')
+        l += temp
+    return l
 
 
 def move_n(board, x, y, steps):
@@ -378,7 +355,7 @@ def display_board(board):
 
 
 def game_on():
-    game = initialize_game(create_board(), 3)
+    game = initialize_game(create_board(), './state1.txt')
     user_color = ''
     ai_color = ''
     turn = 1
@@ -431,4 +408,5 @@ def game_on():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    read_in("./state1.txt")
     game_on()
