@@ -46,7 +46,13 @@ def initialize_game(board, num):
         board[6][2] = 'X'
         # board[5][6] = 'O'
         # board[6][6] = 'O'
-
+    elif num == 3:
+        board[0][0] = 'O'
+        board[5][1] = 'X'
+        board[5][5] = 'X'
+        board[6][1] = 'X'
+        board[6][2] = 'X'
+        board[5][6] = 'O'
     # place all initial chess as shown in the requirements
 
     return board
