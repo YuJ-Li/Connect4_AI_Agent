@@ -32,6 +32,7 @@ def initialize_game(board, num):
         board[6][4] = 'X'
         board[6][5] = 'X'
     elif num == 2:
+        board[0][0] = 'O'
         # board[0][5] = 'O'
         # board[0][6] = 'O'
         # board[1][4] = 'O'
@@ -40,9 +41,10 @@ def initialize_game(board, num):
         # board[3][5] = 'O'
         board[5][1] = 'X'
         board[5][5] = 'X'
-        board[5][6] = 'O'
+        board[4][2] = 'O'
         board[6][1] = 'X'
         board[6][2] = 'X'
+        # board[5][6] = 'O'
         # board[6][6] = 'O'
 
     # place all initial chess as shown in the requirements
@@ -278,7 +280,7 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
                 if new_score == 1:
                     print("best score is ",new_score,cmd)
                     display_board(temp_board)
-        return best_move, -v, state_visited
+        return best_move, v, state_visited
     else:
         opp_color = ''
         if user_color == 'X':
@@ -294,12 +296,13 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
             _, new_score, state_visited = minimax(temp_board, user_color, depth - 1, True, state_visited + 1)
-            if user_color == 'X':
+            if opp_color == 'O':
+                print("new", new_score)
                 new_score = -new_score
             if new_score < v:
                 v = new_score
                 best_move = cmd
-        return best_move, -v, state_visited
+        return best_move, v, state_visited
 
 
 def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta, state_visited):
