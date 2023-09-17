@@ -320,11 +320,11 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             move(temp_board, cmd_list)
             _, new_score, state_visited, d = alpha_beta_pruning(temp_board, user_color, depth - 1, False, alpha, beta,
                                                              state_visited + 1)
+            if user_color == 'X':
+                new_score = -new_score
             if new_score == v and d > best_d:
                 best_move = cmd
                 best_d = max(d, best_d)
-            if user_color == 'X':
-                new_score = -new_score
             if new_score > v:
                 v = new_score
                 best_move = cmd
@@ -349,11 +349,12 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             move(temp_board, cmd_list)
             _, new_score, state_visited,d= alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta,
                                                              state_visited + 1)
+            if opp_color == 'O':
+                new_score = -new_score
             if new_score == v and d > best_d:
                 best_move = cmd
                 best_d = max(d, best_d)
-            if opp_color == 'O':
-                new_score = -new_score
+
             if new_score < v:
                 v = new_score
                 best_move = cmd
@@ -492,6 +493,6 @@ def game_on():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # game_on()
-    game = initialize_game(create_board(), './state1.txt')
-    display_board(game)
+    game_on()
+    # game = initialize_game(create_board(), './state1.txt')
+    # display_board(game)
