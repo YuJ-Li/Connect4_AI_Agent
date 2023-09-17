@@ -22,6 +22,8 @@ def initialize_game(board, filename):
     for row in range(7):
         for col in range(7):
             board[row][col] = l1[row * 7 + col]
+            if board[row][col] == '':
+                board[row][col] = ' '
     return board
 
 
@@ -85,18 +87,26 @@ def check_max_move(board, x, y):
                 count += 1
             if board[x][y - 1] == opp:
                 count += 1
-        if x + 1 <= 6:
+        if y + 1 <= 6:
+            if board[x - 1][y + 1] == opp:
+                count += 1
+
+    if x + 1 <= 6:
             if board[x + 1][y] == opp:
                 count += 1
-            if board[x + 1][y - 1] == opp:
-                count += 1
+            if y - 1 >= 0:
+                if board[x + 1][y - 1] == opp:
+                    count += 1
             if y + 1 <= 6:
                 if board[x + 1][y + 1] == opp:
-                    count += 1;
-                if board[x][y + 1] == opp:
-                    count += 1;
-                if board[x - 1][y + 1] == opp:
-                    count += 1;
+                    count += 1
+    if y + 1 <= 6:
+        if board[x][y+1] == opp:
+            count += 1
+    if y - 1 >= 0:
+        if board[x][y-1] == opp:
+            count += 1
+
     if count == 0:
         return 3
     elif count == 1:
@@ -207,8 +217,8 @@ def move(game, user_cmd_list):
 
 
 def ai_move(board, user_color):
-    # best_move, gamestate, state_visited = minimax(board, user_color, 3, True, 0)
-    best_move, gamestate, state_visited = alpha_beta_pruning(board, user_color, 3, True, -np.inf, np.inf, 0)
+    # best_move, gamestate, state_visited, _= minimax(board, user_color, 3, True, 0)
+    best_move, gamestate, state_visited,_= alpha_beta_pruning(board, user_color, 6, True, -np.inf, np.inf, 0)
     print(best_move, gamestate, state_visited)
     return best_move
 
@@ -243,24 +253,30 @@ def generate_all_possible_moves(board, color):
 
 
 def minimax(board, user_color, depth, maximizing_player, state_visited):
-    if depth == 0 or detect_game_state(board) != 0:
-        return None, detect_game_state(board), state_visited
+    if depth == 0 or detect_game_state(board) == 100 or detect_game_state(board) == -100:
+        return None, detect_game_state(board), state_visited, depth
 
     if maximizing_player:
         valid_moves = generate_all_possible_moves(board, user_color)
         v = -np.inf
         best_move = valid_moves[0]
+        best_d = 0
         for cmd in valid_moves:
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            _, new_score, state_visited = minimax(temp_board, user_color, depth - 1, False, state_visited + 1)
+            _, new_score, state_visited, d = minimax(temp_board, user_color, depth - 1, False, state_visited + 1)
+
+            if new_score == v and d > best_d:
+                best_move = cmd
+                best_d = max(d, best_d)
             if user_color == 'X':
                 new_score = -new_score
             if new_score > v:
                 v = new_score
                 best_move = cmd
-        return best_move, v, state_visited
+                best_d = d
+        return best_move, v, state_visited, best_d
     else:
         opp_color = ''
         if user_color == 'X':
@@ -271,43 +287,52 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
         display_board(board)
         v = np.inf
         best_move = valid_moves[0]
+        best_d = 0
         for cmd in valid_moves:
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            _, new_score, state_visited = minimax(temp_board, user_color, depth - 1, True, state_visited + 1)
+            _, new_score, state_visited,d= minimax(temp_board, user_color, depth - 1, True, state_visited + 1)
+            if new_score == v and d > best_d:
+                best_move = cmd
+                best_d = max(d, best_d)
             if opp_color == 'O':
                 new_score = -new_score
             if new_score < v:
                 v = new_score
                 best_move = cmd
-        return best_move, v, state_visited
+                best_d = d
+        return best_move, v, state_visited, best_d
 
 
 def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta, state_visited):
-    if depth == 0 or detect_game_state(board) != 0:
-        return None, detect_game_state(board), state_visited
+    if depth == 0 or detect_game_state(board) == 100 or detect_game_state(board) == -100:
+        return None, detect_game_state(board), state_visited, depth
 
     if maximizing_player:
         valid_moves = generate_all_possible_moves(board, user_color)
         v = -np.inf
         best_move = valid_moves[0]
+        best_d = 0
         for cmd in valid_moves:
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            _, new_score, state_visited = alpha_beta_pruning(temp_board, user_color, depth - 1, False, alpha, beta,
+            _, new_score, state_visited, d = alpha_beta_pruning(temp_board, user_color, depth - 1, False, alpha, beta,
                                                              state_visited + 1)
+            if new_score == v and d > best_d:
+                best_move = cmd
+                best_d = max(d, best_d)
             if user_color == 'X':
                 new_score = -new_score
-
             if new_score > v:
                 v = new_score
                 best_move = cmd
+                best_d = d
             if v >= beta:
                 break
             alpha = max(alpha, v)
-        return best_move, v, state_visited
+        return best_move, v, state_visited,best_d
     else:
         opp_color = ''
         if user_color == 'X':
@@ -317,37 +342,96 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
         valid_moves = generate_all_possible_moves(board, opp_color)
         v = np.inf
         best_move = valid_moves[0]
+        best_d = 0
         for cmd in valid_moves:
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            _, new_score, state_visited = alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta,
+            _, new_score, state_visited,d= alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta,
                                                              state_visited + 1)
+            if new_score == v and d > best_d:
+                best_move = cmd
+                best_d = max(d, best_d)
             if opp_color == 'O':
                 new_score = -new_score
             if new_score < v:
                 v = new_score
                 best_move = cmd
+                best_d = d
             if v <= alpha:
                 break
             beta = min(beta, v)
-        return best_move, v, state_visited
+        return best_move, v, state_visited, best_d
 
 
 def detect_game_state(game):
-    # detect if one of the player win's the game, return 1 for White win, -1 for Black win and 0 for neutral
+    # detect if one of the player win's the game, return 100 for White win, -100 for Black win
     winner = ''
+    s = 0
     for i in range(6):
         for j in range(6):
             if game[i][j] != ' ' and i + 1 < 7 and j + 1 < 7 and game[i][j] == game[i][j + 1]:
                 if game[i + 1][j] == game[i][j] and game[i + 1][j + 1] == game[i][j]:
                     winner = game[i][j]
     if winner == 'O':
-        return 1
+        # print("score: ", 100)
+        return 100
     elif winner == 'X':
-        return -1
+        # print("score: ", -100)
+        return -100
     else:
-        return 0
+        for i in range(7):
+            for j in range(7):
+                if game[i][j] != ' ':
+                    s += score_of_chess(game, i, j)
+        # print("score: ", s)
+        return s
+
+
+def score_of_chess(game, x, y):
+    # calculate the score of each chess, make sure don't put ' ' in
+    score = 0
+    if x - 1 > -1:
+        if game[x - 1][y] == game[x][y]:
+            score += 1
+            if y + 1 < 7:
+                if game[x][y] == game[x][y + 1]:
+                    score += 1
+            if y - 1 > -1:
+                if game[x][y] == game[x][y - 1]:
+                    score += 1
+            if game[x][y] == 'O':
+                return score
+            else:
+                return -score
+    if x + 1 < 7:
+        if game[x + 1][y] == game[x][y]:
+            score += 1
+            if y + 1 < 7:
+                if game[x][y] == game[x][y + 1]:
+                    score += 1
+            if y - 1 > -1:
+                if game[x][y] == game[x][y - 1]:
+                    score += 1
+            if game[x][y] == 'O':
+                return score
+            else:
+                return -score
+    if y - 1 > -1:
+        if game[x][y - 1] == game[x][y]:
+            score += 1
+            if game[x][y] == 'O':
+                return score
+            else:
+                return -score
+    if y + 1 < 7:
+        if game[x][y + 1] == game[x][y]:
+            score += 1
+            if game[x][y] == 'O':
+                return score
+            else:
+                return -score
+    return score
 
 
 def display_board(board):
@@ -369,7 +453,7 @@ def game_on():
             ai_color = 'X'
             break
     display_board(game)
-    while detect_game_state(game) == 0:
+    while detect_game_state(game) != 100 or detect_game_state(game) != -100:
         if turn == 1:
             val = input("It is your turn, please enter your command: ")
             val = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
@@ -383,10 +467,10 @@ def game_on():
                 check_1 = detect_game_state(game)
                 display_board(game)
                 # if a winner found, break
-                if check_1 == 1:
+                if check_1 == 100:
                     print("The winner is O")
                     break
-                elif check_1 == -1:
+                elif check_1 == -100:
                     print("The winner is X")
                     break
                 turn = -turn
@@ -396,10 +480,10 @@ def game_on():
             check_2 = detect_game_state(game)
             display_board(game)
             # if a winner found, break
-            if check_2 == 1:
+            if check_2 == 100:
                 print("The winner is O")
                 break
-            elif check_2 == -1:
+            elif check_2 == -100:
                 print("The winner is X")
                 break
             turn = -turn
@@ -408,5 +492,6 @@ def game_on():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    read_in("./state1.txt")
-    game_on()
+    # game_on()
+    game = initialize_game(create_board(), './state1.txt')
+    display_board(game)
