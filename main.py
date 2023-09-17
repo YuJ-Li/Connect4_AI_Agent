@@ -92,19 +92,19 @@ def check_max_move(board, x, y):
                 count += 1
 
     if x + 1 <= 6:
-            if board[x + 1][y] == opp:
+        if board[x + 1][y] == opp:
+            count += 1
+        if y - 1 >= 0:
+            if board[x + 1][y - 1] == opp:
                 count += 1
-            if y - 1 >= 0:
-                if board[x + 1][y - 1] == opp:
-                    count += 1
-            if y + 1 <= 6:
-                if board[x + 1][y + 1] == opp:
-                    count += 1
+        if y + 1 <= 6:
+            if board[x + 1][y + 1] == opp:
+                count += 1
     if y + 1 <= 6:
-        if board[x][y+1] == opp:
+        if board[x][y + 1] == opp:
             count += 1
     if y - 1 >= 0:
-        if board[x][y-1] == opp:
+        if board[x][y - 1] == opp:
             count += 1
 
     if count == 0:
@@ -218,7 +218,7 @@ def move(game, user_cmd_list):
 
 def ai_move(board, user_color):
     # best_move, gamestate, state_visited, _= minimax(board, user_color, 3, True, 0)
-    best_move, gamestate, state_visited,_= alpha_beta_pruning(board, user_color, 6, True, -np.inf, np.inf, 0)
+    best_move, gamestate, state_visited, _ = alpha_beta_pruning(board, user_color, 6, True, -np.inf, np.inf, 0)
     print(best_move, gamestate, state_visited)
     return best_move
 
@@ -292,7 +292,7 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            _, new_score, state_visited,d= minimax(temp_board, user_color, depth - 1, True, state_visited + 1)
+            _, new_score, state_visited, d = minimax(temp_board, user_color, depth - 1, True, state_visited + 1)
             if new_score == v and d > best_d:
                 best_move = cmd
                 best_d = max(d, best_d)
@@ -319,7 +319,7 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
             _, new_score, state_visited, d = alpha_beta_pruning(temp_board, user_color, depth - 1, False, alpha, beta,
-                                                             state_visited + 1)
+                                                                state_visited + 1)
             if user_color == 'X':
                 new_score = -new_score
             if new_score == v and d > best_d:
@@ -332,7 +332,7 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             if v >= beta:
                 break
             alpha = max(alpha, v)
-        return best_move, v, state_visited,best_d
+        return best_move, v, state_visited, best_d
     else:
         opp_color = ''
         if user_color == 'X':
@@ -347,8 +347,8 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             temp_board = copy.deepcopy(board)
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
-            _, new_score, state_visited,d= alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta,
-                                                             state_visited + 1)
+            _, new_score, state_visited, d = alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta,
+                                                                state_visited + 1)
             if opp_color == 'O':
                 new_score = -new_score
             if new_score == v and d > best_d:
@@ -493,6 +493,7 @@ def game_on():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    game_on()
-    # game = initialize_game(create_board(), './state1.txt')
-    # display_board(game)
+    # game_on()
+    game = initialize_game(create_board(), './state1.txt')
+    display_board(game)
+    print(check_max_move(game,0,5))
