@@ -320,18 +320,26 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             move(temp_board, cmd_list)
             _, new_score, state_visited, d = alpha_beta_pruning(temp_board, user_color, depth - 1, False, alpha, beta,
                                                                 state_visited + 1)
+            if abs(new_score) == 100:
+                print('new ', new_score)
             if user_color == 'X':
                 new_score = -new_score
-            if new_score == v and d > best_d:
-                best_move = cmd
-                best_d = max(d, best_d)
-            if new_score > v:
+            if new_score == v:
+                if new_score > -100 and d > best_d:
+                    best_move = cmd
+                    best_d = d
+                elif new_score <= -100 and d < best_d:
+                    best_move = cmd
+                    best_d = d
+                print('bd, ', best_d, new_score)
+            elif new_score > v:
                 v = new_score
                 best_move = cmd
                 best_d = d
             if v >= beta:
                 break
             alpha = max(alpha, v)
+            v = -v if user_color == 'X' else v
         return best_move, v, state_visited, best_d
     else:
         opp_color = ''
@@ -349,11 +357,15 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             move(temp_board, cmd_list)
             _, new_score, state_visited, d = alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta,
                                                                 state_visited + 1)
-            if opp_color == 'O':
+            if user_color == 'X':
                 new_score = -new_score
-            if new_score == v and d > best_d:
-                best_move = cmd
-                best_d = max(d, best_d)
+            if new_score == v:
+                if new_score < 100 and d > best_d:
+                    best_move = cmd
+                    best_d = d
+                elif new_score >= 100 and d < best_d:
+                    best_move = cmd
+                    best_d = d
 
             if new_score < v:
                 v = new_score
@@ -362,6 +374,7 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             if v <= alpha:
                 break
             beta = min(beta, v)
+            v = -v if opp_color == 'O' else v
         return best_move, v, state_visited, best_d
 
 
@@ -493,7 +506,7 @@ def game_on():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # game_on()
-    game = initialize_game(create_board(), './state1.txt')
-    display_board(game)
-    print(check_max_move(game,0,5))
+    game_on()
+    # game = initialize_game(create_board(), './test.txt')
+    # display_board(game)
+    # print(generate_all_possible_moves(game,'O'))
