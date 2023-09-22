@@ -217,8 +217,8 @@ def move(game, user_cmd_list):
 
 
 def ai_move(board, user_color):
-    # best_move, gamestate, state_visited, _= minimax(board, user_color, 3, True, 0)
-    best_move, gamestate, state_visited, _ = alpha_beta_pruning(board, user_color, 6, True, -np.inf, np.inf, 0)
+    # best_move, gamestate, state_visited, _ = minimax(board, user_color, 5, True, 0)
+    best_move, gamestate, state_visited, _ = alpha_beta_pruning(board, user_color, 4, True, -np.inf, np.inf, 0)
     print(best_move, gamestate, state_visited)
     return best_move
 
@@ -267,12 +267,14 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             move(temp_board, cmd_list)
             _, new_score, state_visited, d = minimax(temp_board, user_color, depth - 1, False, state_visited + 1)
 
-            if new_score == v and d > best_d:
-                best_move = cmd
-                best_d = max(d, best_d)
-            if user_color == 'X':
-                new_score = -new_score
-            if new_score > v:
+            if new_score == v:
+                if new_score > -100 and d > best_d:
+                    best_move = cmd
+                    best_d = d
+                elif new_score <= -100 and d < best_d:
+                    best_move = cmd
+                    best_d = d
+            elif new_score > v:
                 v = new_score
                 best_move = cmd
                 best_d = d
@@ -284,7 +286,6 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
         else:
             opp_color = 'X'
         valid_moves = generate_all_possible_moves(board, opp_color)
-        display_board(board)
         v = np.inf
         best_move = valid_moves[0]
         best_d = 0
@@ -293,12 +294,15 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             cmd_list = list(cmd)
             move(temp_board, cmd_list)
             _, new_score, state_visited, d = minimax(temp_board, user_color, depth - 1, True, state_visited + 1)
-            if new_score == v and d > best_d:
-                best_move = cmd
-                best_d = max(d, best_d)
-            if opp_color == 'O':
-                new_score = -new_score
-            if new_score < v:
+            if new_score == v:
+                if new_score < 100 and d > best_d:
+                    best_move = cmd
+                    best_d = d
+                elif new_score >= 100 and d < best_d:
+                    best_move = cmd
+                    best_d = d
+
+            elif new_score < v:
                 v = new_score
                 best_move = cmd
                 best_d = d
