@@ -253,8 +253,9 @@ def generate_all_possible_moves(board, color):
 
 
 def minimax(board, user_color, depth, maximizing_player, state_visited):
-    if depth == 0 or detect_game_state(board, user_color) == 100 or detect_game_state(board, user_color) == -100:
-        return None, detect_game_state(board, user_color), state_visited, depth
+    score = detect_game_state(board, user_color)
+    if depth == 0 or score == 100 or score == -100:
+        return None, score, state_visited, depth
 
     if maximizing_player:
         valid_moves = generate_all_possible_moves(board, user_color)
