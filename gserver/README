@@ -1,0 +1,16 @@
+Compile the gameserver and simple client with ./build
+Run the gameserver with java -jar DC4Server.jar
+
+Run the sample client with ./sampleclient [-c color] [-p port] serverhost
+
+You will need to run two such clients, possibly on different machines, to see an actual game interaction.
+Make sure to specify different colors for the two agents, e.g.,
+
+
+./sampleclient -c white <serverhost> 
+./sampleclient -c black <serverhost>
+
+You can also interact manually with the gameserver using netcat (or "nc"), initiating the connection with:
+
+nc <serverhost> <port>
+

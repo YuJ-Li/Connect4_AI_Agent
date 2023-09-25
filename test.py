@@ -1,4 +1,3 @@
-from pandas import DataFrame
 import numpy as np
 import copy
 import socket
@@ -216,9 +215,9 @@ def move(game, user_cmd_list):
 
 def ai_move(board, user_color):
     # best_move, gamestate, state_visited, _ = minimax(board, user_color, 6, True, 1)
-    best_move, gamestate, state_visited, _ = alpha_beta_pruning(board, user_color, 6, True, -np.inf, np.inf, 1)
+    best_move, gamestate, state_visited, _ = alpha_beta_pruning(board, user_color, 4, True, -np.inf, np.inf, 1)
     best_move = str(int(best_move[0]) + 1) + str(int(best_move[1]) + 1) + best_move[2:]
-    print(best_move, gamestate, state_visited)
+    # print(best_move, gamestate, state_visited)
     return best_move
 
 
@@ -468,7 +467,9 @@ def score_of_chess(game, x, y, mycolor):
         return -score
 
 def display_board(board):
-    print(DataFrame(board, index=[1, 2, 3, 4, 5, 6, 7], columns=[1, 2, 3, 4, 5, 6, 7]))
+    for e in board:
+        print(e,'\n')
+    print('\n')
 
 
 def game_on():
@@ -535,8 +536,8 @@ def ai_fight():
         if turn == 1:
             print(ai_color_1, " move")
             val = ai_move(game, ai_color_1)
-            val = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
-            move(game, val)
+            val_move = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
+            move(game, val_move)
             check_1 = detect_game_state(game, ai_color_1)
             display_board(game)
             if check_1 == 1000:
@@ -563,9 +564,11 @@ def ai_fight():
     return 0
 
 def tournement():
+    cmd = ''
+    game = initialize_game(create_board(), './match.txt')
     # connect to the server
     HOST = "156trlinux-1.ece.mcgill.ca"
-    PORT = 22
+    PORT = 12345
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (HOST,PORT)
     sock.connect(server_address)
@@ -574,25 +577,99 @@ def tournement():
     gameID = input("Enter the game ID: \n")
     if 'white' in gameID:
         ai_color = 'O'
+        opp_color = 'X'
+        turn = 1
     else:
         ai_color = 'X'
+        opp_color = 'O'
+        turn = -1
     gameID += '\n'
-    gameID = str.encode(gameID)
+    gameID = gameID.encode('utf-8')
 
     try:
         # send data
         sock.sendall(gameID)
         # receive data
-        received = sock.recv(64)
+        amount_received = 0
+        amount_expected = len(gameID)
+
+        while amount_received < amount_expected:
+            received = sock.recv(128)
+            amount_received += len(received)
+
         print('received: ', received)
+        print("Original state\n")
+        display_board(game)
+        while detect_game_state(game, ai_color) != 1000 or detect_game_state(game, ai_color) != -1000:
+            if turn == 1:
+                val = ai_move(game, ai_color)
+                val_move = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
+                move(game, val_move)
+                cmd = val
+                val += '\n'
+                print(val)
+                val = val.encode('utf-8')
+                print("encoded value: ", val)
+                sock.sendall(val)
+                send_echo = ''
+                amount_received = 0
+                amount_expected = 4
+                while amount_received < amount_expected:
+                    send_echo = sock.recv(64)
+                    amount_received += len(send_echo)
+
+
+                send_echo = send_echo.decode('utf-8')
+                print("echo ",send_echo)
+                check_1 = detect_game_state(game, ai_color)
+                display_board(game)
+                if check_1 == 1000:
+                    print("The winner is ", ai_color)
+                    break
+                elif check_1 == -1000:
+                    print("The winner is ", ai_color)
+                    break
+                turn = -turn
+            else:
+                rec_msg = 0
+                print("start\n")
+                while True:
+                    print("receiving\n")
+                    rec_msg = sock.recv(4)
+                    rec_msg = rec_msg.decode('utf-8')
+                    if rec_msg != 0 and rec_msg != cmd:
+                        break
+                rec_msg = rec_msg.strip()
+                print("received: ", rec_msg)
+                # if 'Time' in rec_
+                rec_move = str(int(rec_msg[0]) - 1) + str(int(rec_msg[1]) - 1) + rec_msg[2:]
+                user_cmd_list = check_valid_move(game, opp_color, rec_move)
+                if not isinstance(user_cmd_list, list):
+                    print("Not a valid move, Game over\n")
+                    break
+                else:
+                    move(game, user_cmd_list)
+                    check_2 = detect_game_state(game, ai_color)
+                    display_board(game)
+                    # if a winner found, break
+                    if check_2 == 1000:
+                        print("The winner is ", opp_color)
+                        break
+                    elif check_2 == -1000:
+                        print("The winner is ", ai_color)
+                        break
+                    turn = -turn
+
     finally:
         sock.close()
+
+    return 0
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # game_on()
     # ai_fight()
-    # tournement()
-    game = initialize_game(create_board(), './match.txt')
-    display_board()
+    tournement()
+    # game = initialize_game(create_board(), './match.txt')
+    # display_board()
