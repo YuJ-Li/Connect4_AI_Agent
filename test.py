@@ -5,7 +5,9 @@ import time
 
 # time limit for computer to make a move
 time_limit = 1
-
+# This prgram implemented an AI agent that plays the modified version of Connectr 4, game_on() allows user to interact
+# with the AI agent; ai_fight() allows 2 AI agents to fight each other; tournement() connects to the mcgill server and
+# play against other colleges our their AI
 
 def create_board():
     # create an empty 7x7 game board
@@ -18,6 +20,7 @@ def create_board():
 
 
 def initialize_game(board, filename):
+    # initialize the board by reading in txt game board file
     l1 = read_in(filename)
     for row in range(7):
         for col in range(7):
@@ -28,6 +31,7 @@ def initialize_game(board, filename):
 
 
 def read_in(filename):
+    # reading in txt file
     f = open(filename, 'r')
     l = []
     for line in f:
@@ -137,6 +141,7 @@ def check_jump(game, curr_x, curr_y, steps, dir):
 
 
 def check_out_of_board(game, cmdlist):
+    # check if a move causes any chess to move out of board
     cmd = cmdlist[2].upper()
     y = int(cmdlist[1])
     x = int(cmdlist[0])
@@ -201,6 +206,7 @@ def check_valid_move(board, user_color, val):
 
 
 def move(game, user_cmd_list):
+    # move the chess
     if user_cmd_list[2] == "N":
         move_n(game, int(user_cmd_list[1]), int(user_cmd_list[0]), int(user_cmd_list[3]))
     elif user_cmd_list[2] == "S":
@@ -217,14 +223,15 @@ def ai_move(board, user_color):
     # best_move, gamestate, state_visited, _ = minimax(board, user_color, 6, True, 1)
     best_move, gamestate, state_visited, _ = alpha_beta_pruning(board, user_color, 4, True, -np.inf, np.inf, 1)
     best_move = str(int(best_move[0]) + 1) + str(int(best_move[1]) + 1) + best_move[2:]
-    # print(best_move, gamestate, state_visited)
+    print(best_move, gamestate, state_visited)
     return best_move
 
 
 def possible_moves(board, x, y, color):
+    # generate all possible moves of the specify chess
     cmd = ''
     cmdlist = []
-    for i in range(1, 4):
+    for i in reversed(range(1, 4)):
         cmd = str(x) + str(y) + 'N' + str(i)
         if check_valid_move(board, color, cmd) != -1:
             cmdlist.append(cmd)
@@ -242,6 +249,7 @@ def possible_moves(board, x, y, color):
 
 
 def generate_all_possible_moves(board, color):
+    # generate all possible moves of a color
     all_possible_moves = []
     for i in range(0, len(board)):
         for j in range(0, len(board[i])):
@@ -251,6 +259,7 @@ def generate_all_possible_moves(board, color):
 
 
 def minimax(board, user_color, depth, maximizing_player, state_visited):
+    # minimax algorithm for the agent
     score = detect_game_state(board, user_color)
     if depth == 0 or score == 1000 or score == -1000:
         return None, score, state_visited, depth
@@ -313,6 +322,7 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
 
 
 def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta, state_visited):
+    # alpha beta pruning algorithm for the agent
     score = detect_game_state(board, user_color)
     if depth == 0 or score == 1000 or score == -1000:
         return None, score, state_visited, depth
@@ -382,6 +392,7 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
 
 
 def detect_game_state(game, player_color):
+    # validate the game state and return the score according to the player color entered
     if player_color == 'X':
         opp_color = 'O'
     else:
@@ -467,13 +478,19 @@ def score_of_chess(game, x, y, mycolor):
         return -score
 
 def display_board(board):
-    for e in board:
-        print(e,'\n')
-    print('\n')
+    # display the game board
+    for row in board:
+        temp = '|'
+        for e in row:
+            e += '|'
+            temp += e
+        print(temp)
+
 
 
 def game_on():
-    game = initialize_game(create_board(), './state3.txt')
+    # human against AI
+    game = initialize_game(create_board(), './state1.txt')
     user_color = ''
     ai_color = ''
     turn = 1
@@ -526,6 +543,7 @@ def game_on():
     return 0
 
 def ai_fight():
+    # AI against AI
     game = initialize_game(create_board(), './state1.txt')
     ai_color_1 = 'O'
     ai_color_2 = 'X'
@@ -564,6 +582,7 @@ def ai_fight():
     return 0
 
 def tournement():
+    # connect to the server and play against colleagues
     cmd = ''
     game = initialize_game(create_board(), './match.txt')
     # connect to the server
@@ -600,7 +619,9 @@ def tournement():
         print('received: ', received)
         print("Original state\n")
         display_board(game)
+        # game loop
         while detect_game_state(game, ai_color) != 1000 or detect_game_state(game, ai_color) != -1000:
+            # !!!!!! detect game over !!!!!
             if turn == 1:
                 val = ai_move(game, ai_color)
                 val_move = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
@@ -668,8 +689,6 @@ def tournement():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # game_on()
+    game_on()
     # ai_fight()
-    tournement()
-    # game = initialize_game(create_board(), './match.txt')
-    # display_board()
+    # tournement()
