@@ -1,8 +1,10 @@
-from pandas import DataFrame
 import numpy as np
 import copy
 import socket
 
+# This prgram implemented an AI agent that plays the modified version of Connectr 4, game_on() allows user to interact
+# with the AI agent; ai_fight() allows 2 AI agents to fight each other; tournement() connects to the mcgill server and
+# play against other colleges our their AI
 
 def create_board():
     # create an empty 7x7 game board
@@ -15,6 +17,7 @@ def create_board():
 
 
 def initialize_game(board, filename):
+    # initialize the board by reading in txt game board file
     l1 = read_in(filename)
     for row in range(7):
         for col in range(7):
@@ -25,6 +28,7 @@ def initialize_game(board, filename):
 
 
 def read_in(filename):
+    # reading in txt file
     f = open(filename, 'r')
     l = []
     for line in f:
@@ -134,6 +138,7 @@ def check_jump(game, curr_x, curr_y, steps, dir):
 
 
 def check_out_of_board(game, cmdlist):
+    # check if a move causes any chess to move out of board
     cmd = cmdlist[2].upper()
     y = int(cmdlist[1])
     x = int(cmdlist[0])
@@ -198,6 +203,7 @@ def check_valid_move(board, user_color, val):
 
 
 def move(game, user_cmd_list):
+    # move the chess
     if user_cmd_list[2] == "N":
         move_n(game, int(user_cmd_list[1]), int(user_cmd_list[0]), int(user_cmd_list[3]))
     elif user_cmd_list[2] == "S":
@@ -211,16 +217,19 @@ def move(game, user_cmd_list):
 
 
 def ai_move(board, user_color):
-    best_move, gamestate, state_visited, _ = minimax(board, user_color, 6, True, 1)
-    # best_move, gamestate, state_visited, _ = alpha_beta_pruning(board, user_color, 6, True, -np.inf, np.inf, 1)
-    print(best_move, gamestate, state_visited)
+    # best_move, gamestate, state_visited, _ = minimax(board, user_color, 6, True, 1)
+    best_move, gamestate, state_visited, _ = alpha_beta_pruning(board, user_color, 5, True, -np.inf, np.inf, 1)
+    best_move = str(int(best_move[0]) + 1) + str(int(best_move[1]) + 1) + best_move[2:]
+    print("move: ", best_move)
+    print("game state: ", gamestate)
     return best_move
 
 
 def possible_moves(board, x, y, color):
+    # generate all possible moves of the specify chess
     cmd = ''
     cmdlist = []
-    for i in range(1, 4):
+    for i in reversed(range(1, 4)):
         cmd = str(x) + str(y) + 'N' + str(i)
         if check_valid_move(board, color, cmd) != -1:
             cmdlist.append(cmd)
@@ -238,6 +247,7 @@ def possible_moves(board, x, y, color):
 
 
 def generate_all_possible_moves(board, color):
+    # generate all possible moves of a color
     all_possible_moves = []
     for i in range(0, len(board)):
         for j in range(0, len(board[i])):
@@ -247,6 +257,7 @@ def generate_all_possible_moves(board, color):
 
 
 def minimax(board, user_color, depth, maximizing_player, state_visited):
+    # minimax algorithm for the agent
     score = detect_game_state(board, user_color)
     if depth == 0 or score == 1000 or score == -1000:
         return None, score, state_visited, depth
@@ -309,6 +320,7 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
 
 
 def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta, state_visited):
+    # alpha beta pruning algorithm for the agent
     score = detect_game_state(board, user_color)
     if depth == 0 or score == 1000 or score == -1000:
         return None, score, state_visited, depth
@@ -326,13 +338,13 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             move(temp_board, cmd_list)
             _, new_score, state_visited, d = alpha_beta_pruning(temp_board, user_color, depth - 1, False, alpha, beta,
                                                                 state_visited + 1)
-            # if new_score == v:
-            #     if new_score > -1000 and d > best_d:
-            #         best_move = cmd
-            #         best_d = d
-            #     elif new_score <= -1000 and d < best_d:
-            #         best_move = cmd
-            #         best_d = d
+            if new_score == v:
+                if new_score > -1000 and d > best_d:
+                    best_move = cmd
+                    best_d = d
+                elif new_score <= -1000 and d < best_d:
+                    best_move = cmd
+                    best_d = d
             if new_score > v:
                 v = new_score
                 best_move = cmd
@@ -359,13 +371,13 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             move(temp_board, cmd_list)
             _, new_score, state_visited, d = alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta,
                                                                 state_visited + 1)
-            # if new_score == v:
-            #     if new_score < 1000 and d > best_d:
-            #         best_move = cmd
-            #         best_d = d
-            #     elif new_score >= 1000 and d < best_d:
-            #         best_move = cmd
-            #         best_d = d
+            if new_score == v:
+                if new_score < 1000 and d > best_d:
+                    best_move = cmd
+                    best_d = d
+                elif new_score >= 1000 and d < best_d:
+                    best_move = cmd
+                    best_d = d
 
             if new_score < v:
                 v = new_score
@@ -378,6 +390,7 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
 
 
 def detect_game_state(game, player_color):
+    # validate the game state and return the score according to the player color entered
     if player_color == 'X':
         opp_color = 'O'
     else:
@@ -394,11 +407,11 @@ def detect_game_state(game, player_color):
         return 1000
     elif winner == opp_color:
         return -1000
-    # else:
-    #     for i in range(7):
-    #         for j in range(7):
-    #             if game[i][j] != ' ':
-    #                 s += score_of_chess(game, i, j, player_color)
+    else:
+        for i in range(7):
+            for j in range(7):
+                if game[i][j] != ' ':
+                    s += score_of_chess(game, i, j, player_color)
     return s
 
 
@@ -411,12 +424,12 @@ def score_of_chess(game, x, y, mycolor):
         score += 0
         if x - 1 > -1 and (game[x - 1][y] == curr or game[x-1][y+1] == curr): # L shape
             score += 10
-            if y + 1 < 7 and game[x-1][y] == curr and game[x-1][y+1] == oppcolor: # L shape blocked
+            if game[x-1][y] == curr and game[x-1][y+1] == oppcolor: # L shape blocked
                 score -= 10
-            elif y + 1 < 7 and game[x-1][y+1] == curr and game[x-1][y] == oppcolor: # L shape blocked
+            elif game[x-1][y+1] == curr and game[x-1][y] == oppcolor: # L shape blocked
                 score -= 10
             else:
-                if y + 1 < 7 and game[x-1][y] == curr and game[x-1][y+1] != oppcolor:
+                if game[x-1][y] == curr and game[x-1][y+1] != oppcolor:
                     # about to win
                     if y + 2 < 7 and game[x-1][y+2] == curr:
                         score += 20
@@ -424,7 +437,7 @@ def score_of_chess(game, x, y, mycolor):
                         score += 20
                     elif y + 4 < 7 and game[x-1][y+2] != oppcolor and game[x-1][y+3] != oppcolor and game[x-1][y+4] == curr:
                         score += 20
-                if y + 1 < 7 and game[x-1][y+1] == curr and game[x-1][y] != oppcolor:
+                if game[x-1][y+1] == curr and game[x-1][y] != oppcolor:
                     # about to win
                     if y - 1 > -1 and game[x-1][y-1] == curr:
                         score += 20
@@ -434,12 +447,12 @@ def score_of_chess(game, x, y, mycolor):
                         score += 20
         elif x + 1 < 7 and (game[x + 1][y] == curr or game[x + 1][y + 1]) == curr: # L shape
             score += 10
-            if y + 1 < 7 and game[x+1][y] == curr and game[x+1][y+1] == oppcolor: # L shape blocked
+            if game[x+1][y] == curr and game[x+1][y+1] == oppcolor: # L shape blocked
                 score -= 10
-            elif y + 1 < 7 and game[x+1][y+1] == curr and game[x+1][y] == oppcolor: # Lshape blocked
+            elif game[x+1][y+1] == curr and game[x+1][y] == oppcolor: # Lshape blocked
                 score -= 10
             else:
-                if y + 1 < 7 and game[x+1][y] == curr and game[x+1][y+1] != oppcolor:
+                if game[x+1][y] == curr and game[x+1][y+1] != oppcolor:
                     # about to win
                     if y + 2 < 7 and game[x+1][y+2] == curr:
                         score += 20
@@ -447,7 +460,7 @@ def score_of_chess(game, x, y, mycolor):
                         score += 20
                     elif y + 4 < 7 and game[x+1][y+2] != oppcolor and game[x+1][y+3] != oppcolor and game[x+1][y+4] == curr:
                         score += 20
-                if y + 1 < 7 and game[x+1][y+1] == curr and game[x+1][y] != oppcolor:
+                if game[x+1][y+1] == curr and game[x+1][y] != oppcolor:
                     # about to win
                     if y - 1 > -1 and game[x+1][y-1] == curr:
                         score += 20
@@ -463,11 +476,19 @@ def score_of_chess(game, x, y, mycolor):
         return -score
 
 def display_board(board):
-    print(DataFrame(board, index=[1, 2, 3, 4, 5, 6, 7], columns=[1, 2, 3, 4, 5, 6, 7]))
+    # display the game board
+    for row in board:
+        temp = '|'
+        for e in row:
+            e += '|'
+            temp += e
+        print(temp)
+
 
 
 def game_on():
-    game = initialize_game(create_board(), './state3.txt')
+    # human against AI
+    game = initialize_game(create_board(), './state1.txt')
     user_color = ''
     ai_color = ''
     turn = 1
@@ -504,7 +525,9 @@ def game_on():
                 turn = -turn
                 # CHANGE USER COLOR AFTER TEST
         if turn == -1:
-            move(game, ai_move(game, ai_color))
+            val = ai_move(game, ai_color)
+            val = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
+            move(game, val)
             check_2 = detect_game_state(game,ai_color)
             display_board(game)
             # if a winner found, break
@@ -518,16 +541,19 @@ def game_on():
     return 0
 
 def ai_fight():
-    game = initialize_game(create_board(), './state1.txt')
+    # AI against AI
+    game = initialize_game(create_board(), './state2.txt')
     ai_color_1 = 'O'
     ai_color_2 = 'X'
     turn = 1
     print("Original state")
     display_board(game)
-    while detect_game_state(game, ai_color_1) != 1000 or detect_game_state(game, ai_color_2) != -1000:
+    while detect_game_state(game, ai_color_1) != 1000 or detect_game_state(game, ai_color_1) != -1000:
         if turn == 1:
             print(ai_color_1, " move")
-            move(game, ai_move(game, ai_color_1))
+            val = ai_move(game, ai_color_1)
+            val_move = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
+            move(game, val_move)
             check_1 = detect_game_state(game, ai_color_1)
             display_board(game)
             if check_1 == 1000:
@@ -539,7 +565,9 @@ def ai_fight():
             turn = -turn
         else:
             print(ai_color_2, " move")
-            move(game, ai_move(game, ai_color_2))
+            val = ai_move(game, ai_color_2)
+            val = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
+            move(game, val)
             check_2 = detect_game_state(game, ai_color_1)
             display_board(game)
             if check_2 == 1000:
@@ -551,17 +579,109 @@ def ai_fight():
             turn = -turn
     return 0
 
+def tournement():
+    # connect to the server and play against colleagues
+    cmd = ''
+    game = initialize_game(create_board(), './match.txt')
+    # connect to the server
+    HOST = "156trlinux-1.ece.mcgill.ca"
+    PORT = 12345
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = (HOST,PORT)
+    sock.connect(server_address)
+    print("Connected to server")
+    # send game id and determine color
+    gameID = input("Enter the game ID: \n")
+    if 'white' in gameID:
+        ai_color = 'O'
+        opp_color = 'X'
+        turn = 1
+    else:
+        ai_color = 'X'
+        opp_color = 'O'
+        turn = -1
+    gameID += '\n'
+    gameID = gameID.encode('utf-8')
+
+    try:
+        # send data
+        sock.sendall(gameID)
+        # receive data
+        amount_received = 0
+        amount_expected = len(gameID)
+
+        while amount_received < amount_expected:
+            received = sock.recv(128)
+            amount_received += len(received)
+        print("Original state\n")
+        display_board(game)
+        # game loop
+        while detect_game_state(game, ai_color) != 1000 or detect_game_state(game, ai_color) != -1000:
+            # !!!!!! detect game over !!!!!
+            if turn == 1:
+                val = ai_move(game, ai_color)
+                val_move = str(int(val[0]) - 1) + str(int(val[1]) - 1) + val[2:]
+                move(game, val_move)
+                cmd = val
+                val += '\n'
+                print(val)
+                val = val.encode('utf-8')
+                sock.sendall(val)
+                send_echo = ''
+                amount_received = 0
+                amount_expected = 4
+                while amount_received < amount_expected:
+                    send_echo = sock.recv(64)
+                    amount_received += len(send_echo)
+                send_echo = send_echo.decode('utf-8')
+                print("Send echo ",send_echo)
+                check_1 = detect_game_state(game, ai_color)
+                display_board(game)
+                if check_1 == 1000:
+                    print("The winner is ", ai_color)
+                    break
+                elif check_1 == -1000:
+                    print("The winner is ", opp_color)
+                    break
+                turn = -turn
+            else:
+                rec_msg = 0
+                while True:
+                    print("receiving\n")
+                    rec_msg = sock.recv(4)
+                    rec_msg = rec_msg.decode('utf-8')
+                    if rec_msg != 0 and rec_msg != cmd:
+                        break
+                rec_msg = rec_msg.strip()
+                print("received: ", rec_msg)
+                if 'Time' in rec_msg:
+                    print("You win, Game Over\n")
+                    break
+                rec_move = str(int(rec_msg[0]) - 1) + str(int(rec_msg[1]) - 1) + rec_msg[2:]
+                user_cmd_list = check_valid_move(game, opp_color, rec_move)
+                if not isinstance(user_cmd_list, list):
+                    print("Not a valid move, Game over\n")
+                    break
+                else:
+                    move(game, user_cmd_list)
+                    check_2 = detect_game_state(game, opp_color)
+                    display_board(game)
+                    # if a winner found, break
+                    if check_2 == 1000:
+                        print("The winner is ", opp_color)
+                        break
+                    elif check_2 == -1000:
+                        print("The winner is ", ai_color)
+                        break
+                    turn = -turn
+
+    finally:
+        sock.close()
+    return 0
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # game_on()
     ai_fight()
-
-
-    # HOST = "156trlinux-1.ece.mcgill.ca"
-    # PORT = 21
-    #
-    # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    #     s.connect((HOST,PORT))
-    #     print("connected")
-
+    # tournement()
