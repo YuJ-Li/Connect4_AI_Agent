@@ -4,7 +4,12 @@ import socket
 
 # This prgram implemented an AI agent that plays the modified version of Connectr 4, game_on() allows user to interact
 # with the AI agent; ai_fight() allows 2 AI agents to fight each other; tournement() connects to the mcgill server and
-# play against other colleges our their AI
+# play against other colleges; PLEASE MAKE SURE THE ATTACHED TXT FILE ARE IN THE SAME DIRECTORY AS THE PROGRAM!!!!!
+# To modify parameters for the AI agent, please go to line 224 to modify the method ai_move(),
+# it is by default running alphabeta pruning algorithm with a depth of 4, to change the depth please
+# modify the third parameter of the alpha_beta_pruning() at line 226; To switch to minimax algorithm, please comment
+# line 226 and uncomment line 225, to change the depth for minimax, please change the third parameter of the minimax()
+# at line 225
 
 def create_board():
     # create an empty 7x7 game board
@@ -218,7 +223,7 @@ def move(game, user_cmd_list):
 
 def ai_move(board, user_color):
     # best_move, gamestate, state_visited, _ = minimax(board, user_color, 6, True, 1)
-    best_move, gamestate, state_visited, _ = alpha_beta_pruning(board, user_color, 5, True, -np.inf, np.inf, 1)
+    best_move, gamestate, state_visited, _ = alpha_beta_pruning(board, user_color, 4, True, -np.inf, np.inf, 1)
     best_move = str(int(best_move[0]) + 1) + str(int(best_move[1]) + 1) + best_move[2:]
     print("move: ", best_move)
     print("game state: ", gamestate)
@@ -276,6 +281,7 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             _, new_score, state_visited, d = minimax(temp_board, user_color, depth - 1, False, state_visited + 1)
 
             if new_score == v:
+                # win the fast possible or lose the slowest possible
                 if new_score > -1000 and d > best_d:
                     best_move = cmd
                     best_d = d
@@ -305,6 +311,7 @@ def minimax(board, user_color, depth, maximizing_player, state_visited):
             move(temp_board, cmd_list)
             _, new_score, state_visited, d = minimax(temp_board, user_color, depth - 1, True, state_visited + 1)
             if new_score == v:
+                # win the fast possible or lose the slowest possible
                 if new_score < 1000 and d > best_d:
                     best_move = cmd
                     best_d = d
@@ -339,6 +346,7 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             _, new_score, state_visited, d = alpha_beta_pruning(temp_board, user_color, depth - 1, False, alpha, beta,
                                                                 state_visited + 1)
             if new_score == v:
+                # win the fast possible or lose the slowest possible
                 if new_score > -1000 and d > best_d:
                     best_move = cmd
                     best_d = d
@@ -372,6 +380,7 @@ def alpha_beta_pruning(board, user_color, depth, maximizing_player, alpha, beta,
             _, new_score, state_visited, d = alpha_beta_pruning(temp_board, user_color, depth - 1, True, alpha, beta,
                                                                 state_visited + 1)
             if new_score == v:
+                # win the fast possible or lose the slowest possible
                 if new_score < 1000 and d > best_d:
                     best_move = cmd
                     best_d = d
@@ -395,7 +404,7 @@ def detect_game_state(game, player_color):
         opp_color = 'O'
     else:
         opp_color = 'X'
-    # detect if one of the player win's the game, return 1000 for White win, -1000 for Black win
+    # detect if one of the player win's the game, return 1000 for player win, -1000 for opp win
     winner = ''
     s = 0
     for i in range(6):
@@ -491,8 +500,8 @@ def game_on():
     game = initialize_game(create_board(), './state1.txt')
     user_color = ''
     ai_color = ''
-    turn = 1
-    while True:
+    turn = 1 # to determine whose turn
+    while True: # setup color
         user_color = input("Please choose your color by entering 'O'(white) or 'X'(black): ").upper()
         if user_color == 'X':
             ai_color = 'O'
@@ -545,7 +554,7 @@ def ai_fight():
     game = initialize_game(create_board(), './state2.txt')
     ai_color_1 = 'O'
     ai_color_2 = 'X'
-    turn = 1
+    turn = 1 # to determine whose turn
     print("Original state")
     display_board(game)
     while detect_game_state(game, ai_color_1) != 1000 or detect_game_state(game, ai_color_1) != -1000:
@@ -646,6 +655,7 @@ def tournement():
                 turn = -turn
             else:
                 rec_msg = 0
+                # receive msg
                 while True:
                     print("receiving\n")
                     rec_msg = sock.recv(4)
@@ -654,7 +664,7 @@ def tournement():
                         break
                 rec_msg = rec_msg.strip()
                 print("received: ", rec_msg)
-                if 'Time' in rec_msg:
+                if 'Time' in rec_msg or rec_msg == '':
                     print("You win, Game Over\n")
                     break
                 rec_move = str(int(rec_msg[0]) - 1) + str(int(rec_msg[1]) - 1) + rec_msg[2:]
@@ -683,5 +693,5 @@ def tournement():
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # game_on()
-    ai_fight()
-    # tournement()
+    # ai_fight()
+    tournement()
